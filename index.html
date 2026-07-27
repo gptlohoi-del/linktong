@@ -4,6 +4,12 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang Liên Kết Của Tôi</title>
+    
+    <!-- Cấu hình PWA -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="./icon-192x192.png">
+
     <style>
         /* Thiết lập cơ bản */
         :root {
@@ -62,13 +68,13 @@
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-		.link-card:hover {
-			background-color: var(--primary-color);
-			color: #ffffff;
-			transform: translateY(-5px) scale(1.02);
-			box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
-			border-color: var(--primary-color);
-		}
+        .link-card:hover {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
+            border-color: var(--primary-color);
+        }
 
         footer {
             margin-top: 50px;
@@ -89,13 +95,13 @@
             <a href="https://docs.google.com/document/d/1NOzNlvptUZdAU44KWExHSKis3bsB-xo4k82_vpu03as/edit?usp=sharing" class="link-card" target="_blank" rel="noopener noreferrer">💡 60 VỊ TDM</a>
             <a href="https://lelevietnam99.github.io/test-record/" class="link-card" target="_blank" rel="noopener noreferrer">💡 LUYỆN PHÁT ÂM</a>
             <a href="https://lelevietnam99.github.io/HOC-NOT-NHAC/" class="link-card" target="_blank" rel="noopener noreferrer">💡 LUYỆN ĐỌC NỐT NHẠC</a>
-			<a href="https://gptlohoi-del.github.io/chuyentone/" class="link-card" target="_blank" rel="noopener noreferrer">💡 CHUYỂN TONE NHẠC</a>      
+            <a href="https://gptlohoi-del.github.io/chuyentone/" class="link-card" target="_blank" rel="noopener noreferrer">💡 CHUYỂN TONE NHẠC</a>      
             <a href="https://gptlohoi-del.github.io/dansinh/" class="link-card" target="_blank" rel="noopener noreferrer">💡 PHÁT ÂM TIẾNG ANH</a>
             <a href="https://gptlohoi-del.github.io/telepromter2/" class="link-card" target="_blank" rel="noopener noreferrer">💡 MÁY NHẮC CHỮ</a>
-			<a href="https://ttpq-exp.vercel.app/" class="link-card" target="_blank" rel="noopener noreferrer">💡 CHIA SẺ KINH NGHIỆM</a>
+            <a href="https://ttpq-exp.vercel.app/" class="link-card" target="_blank" rel="noopener noreferrer">💡 CHIA SẺ KINH NGHIỆM</a>
             <a href="https://atgtpq-th8v.vercel.app/" class="link-card" target="_blank" rel="noopener noreferrer">🚘 AN TOÀN GIAO THÔNG</a>
-			<a href="https://gptlohoi-del.github.io/testguixe/" class="link-card" target="_blank" rel="noopener noreferrer">💡 WEB GỬI XE</a>
-			<a href="https://thientonphatquang.com/lien-he/" class="link-card" target="_blank" rel="noopener noreferrer">💡 THÔNG TIN CHÙA</a>
+            <a href="https://gptlohoi-del.github.io/testguixe/" class="link-card" target="_blank" rel="noopener noreferrer">💡 WEB GỬI XE</a>
+            <a href="https://thientonphatquang.com/lien-he/" class="link-card" target="_blank" rel="noopener noreferrer">💡 THÔNG TIN CHÙA</a>
             <a href="https://pheptinh-ruddy.vercel.app/" class="link-card" target="_blank" rel="noopener noreferrer">💻 PHÉP TÍNH</a>
         </div>
 
@@ -103,5 +109,20 @@
             © 2025 - Thiết kế bởi Gemini
         </footer>
     </div>
+
+    <!-- Script đăng ký Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('Service Worker đã đăng ký thành công:', registration);
+                    })
+                    .catch(error => {
+                        console.log('Đăng ký Service Worker thất bại:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
