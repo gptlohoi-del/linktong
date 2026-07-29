@@ -1,4 +1,4 @@
-const CACHE_NAME = 'link-tree-cache-v1';
+const CACHE_NAME = 'link-tree-cache-v2';
 const urlsToCache = [
   './',
   './index.html',
