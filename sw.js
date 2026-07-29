@@ -1,44 +1,57 @@
-// Đổi số phiên bản này MỖI LẦN bạn cập nhật code HTML/CSS
-const CACHE_NAME = 'my-site-cache-v2'; 
+// 1. ĐỔI SỐ PHIÊN BẢN (v1 -> v2). MỖI LẦN CẬP NHẬT CODE WEB, HÃY TĂNG SỐ NÀY LÊN (v3, v4...)
+const CACHE_NAME = 'link-tree-cache-v2'; 
+const urlsToCache = [
+  './',
+  './index.html',
+  './qrcode.png', // Nhớ thêm file ảnh QR vào để nó lưu offline
+  './manifest.json',
+  // Thêm icon vào đây nếu bạn đã có file icon thực tế
+  // './icon-192x192.png',
+  // './icon-512x512.png'
+];
 
-// Cài đặt và ép buộc kích hoạt ngay lập tức
+// Quá trình cài đặt: Lưu các file vào Cache
 self.addEventListener('install', event => {
-    self.skipWaiting(); // BẮT BUỘC: Ép Service Worker mới vượt qua trạng thái chờ
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll([
-                '/',
-                '/index.html',
-                '/index_2.html',
-                '/qrcode.png'
-                // Thêm các file khác của bạn vào đây
-            ]);
-        })
-    );
+  // THÊM DÒNG NÀY: Bắt buộc Service Worker mới bỏ qua trạng thái "chờ" và cài đặt ngay
+  self.skipWaiting(); 
+  
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Đã mở cache');
+        return cache.addAll(urlsToCache);
+      })
+  );
 });
 
-// Kích hoạt và dọn dẹp bộ nhớ đệm (cache) cũ
-self.addEventListener('activate', event => {
-    event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cacheName => {
-                    // Nếu tên cache không khớp với CACHE_NAME hiện tại -> Xóa nó
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('Đang xóa cache cũ:', cacheName);
-                        return caches.delete(cacheName); // BẮT BUỘC: Xóa cache cũ
-                    }
-                })
-            );
-        }).then(() => self.clients.claim()) // Ép Service Worker mới nắm quyền kiểm soát tab ngay lập tức
-    );
-});
-
-// Trả về dữ liệu
+// Phản hồi yêu cầu (Fetch): Trả về từ Cache nếu có, nếu không thì lấy từ mạng
 self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request).then(response => {
-            return response || fetch(event.request);
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        if (response) {
+          return response; // Trả về kết quả đã cache
+        }
+        return fetch(event.request); // Tải từ Internet
+      })
+  );
+});
+
+// Cập nhật Service worker và xóa cache cũ
+self.addEventListener('activate', event => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Đã xóa cache cũ:', cacheName);
+            return caches.delete(cacheName);
+          }
         })
-    );
+      );
+    })
+    // THÊM DÒNG NÀY: Ép Service Worker mới giành quyền kiểm soát trang web ngay lập tức
+    .then(() => self.clients.claim()) 
+  );
 });
