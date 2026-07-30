@@ -11,18 +11,29 @@ const urlsToCache = [
 ];
 
 // Quá trình cài đặt: Lưu các file vào Cache
-self.addEventListener('install', event => {
-  // THÊM DÒNG NÀY: Bắt buộc Service Worker mới bỏ qua trạng thái "chờ" và cài đặt ngay
-  self.skipWaiting(); 
-  
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Đã mở cache');
-        return cache.addAll(urlsToCache);
+
+
+// Phản hồi yêu cầu (Fetch): Chiến lược Network-First (Ưu tiên Mạng)
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    fetch(event.request)
+      .then(networkResponse => {
+        // Nếu điện thoại có mạng và tải file thành công:
+        // Mở cache ra và cập nhật lại file mới nhất vào cache
+        return caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        });
+      })
+      .catch(() => {
+        // Nếu điện thoại mất mạng (offline):
+        // Tìm và trả về file đã lưu sẵn trong bộ nhớ đệm
+        return caches.match(event.request);
       })
   );
 });
+
+
 
 // Phản hồi yêu cầu (Fetch): Trả về từ Cache nếu có, nếu không thì lấy từ mạng
 self.addEventListener('fetch', event => {
