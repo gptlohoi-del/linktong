@@ -1,5 +1,5 @@
 // 1. ĐỔI SỐ PHIÊN BẢN (v1 -> v2). MỖI LẦN CẬP NHẬT CODE WEB, HÃY TĂNG SỐ NÀY LÊN (v3, v4...)
-const CACHE_NAME = 'link-tree-cache-v4'; 
+const CACHE_NAME = 'link-tree-cache-v5'; 
 const urlsToCache = [
   './',
   './index.html',
