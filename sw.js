@@ -1,55 +1,29 @@
-// 1. ĐỔI SỐ PHIÊN BẢN (v1 -> v2). MỖI LẦN CẬP NHẬT CODE WEB, HÃY TĂNG SỐ NÀY LÊN (v3, v4...)
-const CACHE_NAME = 'link-tree-cache-v6'; 
+const CACHE_NAME = 'link-tree-cache-v7'; // Tăng version để trình duyệt cập nhật
 const urlsToCache = [
   './',
   './index.html',
-  './qrcode.png', // Nhớ thêm file ảnh QR vào để nó lưu offline
+  './links.json',       // QUAN TRỌNG: Phải cache file này để hiện link khi offline
+  './qrcode.png',
   './manifest.json',
-  // Thêm icon vào đây nếu bạn đã có file icon thực tế
-  // './icon-192x192.png',
-  // './icon-512x512.png'
+  './icon-192x192.png', // Đã mở comment
+  './icon-512x512.png'  // Đã mở comment
 ];
 
-// Quá trình cài đặt: Lưu các file vào Cache
-
-
-// Phản hồi yêu cầu (Fetch): Chiến lược Network-First (Ưu tiên Mạng)
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    fetch(event.request)
-      .then(networkResponse => {
-        // Nếu điện thoại có mạng và tải file thành công:
-        // Mở cache ra và cập nhật lại file mới nhất vào cache
-        return caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, networkResponse.clone());
-          return networkResponse;
-        });
-      })
-      .catch(() => {
-        // Nếu điện thoại mất mạng (offline):
-        // Tìm và trả về file đã lưu sẵn trong bộ nhớ đệm
-        return caches.match(event.request);
+// 1. Quá trình cài đặt: Lưu các file vào Cache và ép kích hoạt
+self.addEventListener('install', event => {
+  self.skipWaiting(); // Ép bản mới nhất vượt qua trạng thái waiting
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Đã mở cache v7');
+        return cache.addAll(urlsToCache);
       })
   );
 });
 
-
-
-// Phản hồi yêu cầu (Fetch): Trả về từ Cache nếu có, nếu không thì lấy từ mạng
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response; // Trả về kết quả đã cache
-        }
-        return fetch(event.request); // Tải từ Internet
-      })
-  );
-});
-
-// Cập nhật Service worker và xóa cache cũ
+// 2. Kích hoạt và dọn dẹp cache cũ
 self.addEventListener('activate', event => {
+  event.waitUntil(self.clients.claim()); // Giành quyền kiểm soát trang ngay lập tức
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -62,7 +36,37 @@ self.addEventListener('activate', event => {
         })
       );
     })
-    // THÊM DÒNG NÀY: Ép Service Worker mới giành quyền kiểm soát trang web ngay lập tức
-    .then(() => self.clients.claim()) 
+  );
+});
+
+// 3. Phản hồi yêu cầu (Fetch): Ưu tiên mạng, dự phòng bằng cache
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    fetch(event.request)
+      .then(networkResponse => {
+        // Nếu có mạng, lưu bản mới nhất của request này vào cache
+        // (Rất hữu ích để links.json luôn được cập nhật ngầm)
+        const responseClone = networkResponse.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          // Chỉ đưa vào cache nếu request dùng giao thức http/https
+          if(event.request.url.startsWith('http')){
+            cache.put(event.request, responseClone);
+          }
+        });
+        return networkResponse;
+      })
+      .catch(() => {
+        // Nếu mất mạng, lôi từ cache ra
+        return caches.match(event.request).then(response => {
+            if (response) {
+                return response;
+            }
+            // Dự phòng cho điều hướng trang
+            if (event.request.mode === 'navigate') {
+                return caches.match('./index.html');
+            }
+            return undefined;
+        });
+      })
   );
 });
